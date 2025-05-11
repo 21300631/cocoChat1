@@ -1,0 +1,19 @@
+# Archivos compilados de Java
+*.class
+*.jar
+
+# Directorios de build
+target/
+bin/
+build/
+
+# Archivos del IDE
+.idea/
+*.iml
+*.swp
+*.project
+*.settings/
+.classpath
+
+# Otros
+.DS_Store
