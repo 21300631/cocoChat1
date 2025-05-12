@@ -1,23 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package cocochat;
+
+//Import Vistas (frontend)
 import vistas.Coco;
 
-/**
- *
- * @author Laraa
- */
-public class CocoChat {
+// Import Conectores (backend base de datos)
+import conectores.Base_Datos;
+import conectores.Usuario_Controller;
 
-    /**
-     * @param args the command line arguments
-     */
+// Inport Modelos (Tablas base de datos)
+import modelos.Usuarios;
+
+public class CocoChat {
     public static void main(String[] args) {
         Coco coco = new Coco();
         coco.setVisible(true);
-        // TODO code application logic here
+        
+        //Base_Datos bd = new Base_Datos();
+        Usuario_Controller usr_control = new Usuario_Controller();
+        Usuarios user1 = new Usuarios("Juan", "Alberto", "1234567890", "si@ejemplo.com", null, null, null, null, false, null, 'M');
+        
     }
     
 }
