@@ -116,6 +116,13 @@ public class Registro extends JDialog {
         nuevoUsuario.setEstado("Disponible");
         nuevoUsuario.setCuenta_verificada(false);
         
+        // ======== MONITOR ========
+        StringBuilder usuMonitor = new StringBuilder();
+        usuMonitor.append(txtNombre);
+        usuMonitor.append(": se registro ");
+
+        System.out.println(usuMonitor);
+        
         // Guardar el usuario en la base de datos
         int resultado = CocoChat.usuarioController.add(nuevoUsuario);
         
@@ -131,5 +138,6 @@ public class Registro extends JDialog {
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
+        
     }
 }

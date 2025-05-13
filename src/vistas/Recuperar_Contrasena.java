@@ -95,5 +95,11 @@ public class Recuperar_Contrasena extends JDialog {
                 "Correo no encontrado", 
                 JOptionPane.ERROR_MESSAGE);
         }
+        // ======== MONITOR ========
+        StringBuilder monitor = new StringBuilder();
+        monitor.append(email);
+        monitor.append(": cambio su contraseña ");
+
+        System.out.println(monitor);
     }
 }

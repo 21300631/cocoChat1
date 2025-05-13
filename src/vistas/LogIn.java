@@ -88,6 +88,13 @@ public class LogIn extends JFrame {
             Coco coco = new Coco();
             coco.setVisible(true);
             
+            // ======== MONITOR ========
+            StringBuilder usuMonitor = new StringBuilder();
+            usuMonitor.append(user);
+            usuMonitor.append(": hizo login ");
+
+            System.out.println(usuMonitor);
+            
             // Cerrar esta ventana
             this.dispose();
         } else {
@@ -103,6 +110,7 @@ public class LogIn extends JFrame {
         // Crear y mostrar el formulario de registro
         Registro registroForm = new Registro(this);
         registroForm.setVisible(true);
+        
     }
     
     // Método para manejar la recuperación de contraseña

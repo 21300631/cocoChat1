@@ -259,7 +259,7 @@ public class Coco extends JFrame {
     onlinePanel.setPreferredSize(new Dimension(150, 0));
     onlinePanel.setBackground(new Color(230, 255, 230));
 
-    String[] onlineUsers = {"Uriel", "Ozuna", "Mia Khalifa", "Zahid"};
+    String[] onlineUsers = {"Uriel", "Ozuna", "Mia", "Zahid"};
     for (String user : onlineUsers) {
         JLabel userLabel = new JLabel("• " + user);
         userLabel.setForeground(new Color(0, 100, 0));
@@ -328,6 +328,9 @@ public class Coco extends JFrame {
 
     // Método para cargar los grupos
     private void cargarGrupos() {
+        // ========= MONITOR ==========
+        System.out.println("Cargando grupos del usuario: " + CocoChat.usuarioActual.getNombre());
+        
         // Obtener lista de grupos del usuario actual
         List<Grupos> grupos = CocoChat.gruposController.getGruposByUsuario(
                               CocoChat.usuarioActual.getUsuario_Id());
@@ -337,6 +340,8 @@ public class Coco extends JFrame {
         
         // Agregar cada grupo al panel
         for (Grupos grupo : grupos) {
+            // ========= MONITOR ==========
+            System.out.println("Añadiendo grupo: " + grupo.getNombre());
             JLabel grupoLabel = new JLabel("✧ " + grupo.getNombre());
             grupoLabel.setForeground(new Color(0, 100, 0));
             grupoLabel.setBorder(new EmptyBorder(3, 5, 3, 5));
@@ -349,14 +354,19 @@ public class Coco extends JFrame {
 
     // Método para cargar los usuarios en línea
     private void cargarUsuariosEnLinea() {
+        // ========= MONITOR ==========
+        System.out.println("Buscando usuarios en línea...");
+        
         // Obtener lista de usuarios en línea
         List<Usuarios> usuariosEnLinea = CocoChat.usuarioController.getUsuariosEnLinea();
-        
         // Limpiar panel de usuarios en línea
         onlinePanel.removeAll();
         
         // Agregar cada usuario al panel
         for (Usuarios usuario : usuariosEnLinea) {
+            // ========= MONITOR ==========
+            System.out.println("Usuario en línea: " + usuario.getNombre());
+
             JLabel usuarioLabel = new JLabel("• " + usuario.getNombre());
             usuarioLabel.setForeground(new Color(0, 100, 0));
             usuarioLabel.setBorder(new EmptyBorder(3, 5, 3, 5));
@@ -436,6 +446,9 @@ public class Coco extends JFrame {
     }
     
     private void abrirChat(Usuarios contacto) {
+        // ===== MONITOR =====
+        System.out.println("Abriendo chat con: " + contacto.getNombre());
+        
         // Guardar el contacto seleccionado
         contactoActual = contacto;
         
@@ -450,6 +463,10 @@ public class Coco extends JFrame {
     }
     
     private void cargarMensajesConContacto(Usuarios contacto) {
+        
+        // ==== MONITOR ====
+        System.out.println("Cargando mensajes con " + contacto.getNombre());
+        
         // Guardar el contacto actual
         this.contactoActual = contacto;
         
@@ -553,10 +570,15 @@ public class Coco extends JFrame {
     
     // (1) Agregar Amigo
     private void btnAgregarAmigoActionPerformed(ActionEvent evt) {
+        // ====== MONITOR ======
+        System.out.println("Usuario inició proceso de agregar amigo");
+        
+        
         String email = JOptionPane.showInputDialog(this, "Email del usuario a agregar:");
         
         if (email != null && !email.trim().isEmpty()) {
             Usuarios nuevoAmigo = CocoChat.usuarioController.getByEmail(email);
+            
             
             if (nuevoAmigo != null) {
                 // No permitir agregarse a sí mismo
