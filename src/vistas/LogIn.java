@@ -3,6 +3,7 @@ package vistas;
 import cocochat.CocoChat;
 import java.awt.*;
 import javax.swing.*;
+import modelos.Grupos;
 import modelos.Usuarios;
 
 public class LogIn extends JFrame {
@@ -87,6 +88,23 @@ public class LogIn extends JFrame {
             // Mostrar la ventana principal
             Coco coco = new Coco();
             coco.setVisible(true);
+            
+            // ======== MONITOR ========
+            StringBuilder usuMonitor = new StringBuilder();
+            usuMonitor.append(user);
+            usuMonitor.append(": hizo login ");
+            System.out.println(usuMonitor);
+            
+            // Mostrar chat Global por defecto
+            SwingUtilities.invokeLater(() -> {
+                // Buscar el grupo Global (ID = 2)
+                for (Grupos grupo : CocoChat.gruposController.getGruposByUsuario(CocoChat.usuarioActual.getUsuario_Id())) {
+                    if (grupo.getGrupoID() == 2) { // ID del grupo Global según la tabla
+                        coco.getChatPanel().mostrarChatGrupo(grupo);
+                        break;
+                    }
+                }
+            });
             
             // Cerrar esta ventana
             this.dispose();

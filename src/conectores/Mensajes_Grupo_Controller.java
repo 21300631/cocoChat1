@@ -20,37 +20,53 @@ public class Mensajes_Grupo_Controller extends Base_Datos {
         super();
     }
     
-    // Método para enviar un mensaje a un grupo
+    /**
+     * Envía un mensaje a un grupo y devuelve el ID del mensaje creado
+     * 
+     * @param mensaje El mensaje a enviar
+     * @return ID del mensaje creado, o -1 en caso de error
+     */
     public int enviarMensaje(Mensajes_Grupo mensaje) {
         Connection conn = super.getREF();
         
         if (conn == null) {
-            LOGGER.log(Level.SEVERE, "Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
             return -1;
         }
         
-        String sql = "INSERT INTO MensajesGrupo (GrupoID, RemitenteID, Contenido, FechaEnvio, EsAnuncio) " +
-                     "VALUES (?, ?, ?, GETDATE(), ?)";
-        
-        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setInt(1, mensaje.getGrupoID());
-            pstmt.setInt(2, mensaje.getRemitenteID());
-            pstmt.setString(3, mensaje.getContenido());
-            pstmt.setBoolean(4, mensaje.isEsAnuncio());
+        // Verificar si la tabla existe, si no, crearla
+        try {
+            String createTableSQL = "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MensajesGrupo') " +
+                                 "CREATE TABLE MensajesGrupo (" +
+                                 "MensajeID INT IDENTITY(1,1) PRIMARY KEY, " +
+                                 "GrupoID INT NOT NULL, " +
+                                 "RemitenteID INT NOT NULL, " +
+                                 "Contenido NVARCHAR(MAX) NOT NULL, " +
+                                 "FechaEnvio DATETIME NOT NULL DEFAULT GETDATE(), " +
+                                 "EsAnuncio BIT NOT NULL DEFAULT 0)";
             
-            int filasAfectadas = pstmt.executeUpdate();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(createTableSQL);
+            }
             
-            if (filasAfectadas > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int nuevoID = generatedKeys.getInt(1);
-                        LOGGER.log(Level.INFO, "Mensaje de grupo enviado con ID: {0}", nuevoID);
-                        return nuevoID;
+            // Insertar el mensaje
+            String sql = "INSERT INTO MensajesGrupo (GrupoID, RemitenteID, Contenido, FechaEnvio, EsAnuncio) " +
+                         "VALUES (?, ?, ?, GETDATE(), ?); SELECT SCOPE_IDENTITY() AS ID";
+            
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, mensaje.getGrupoID());
+                ps.setInt(2, mensaje.getRemitenteID());
+                ps.setString(3, mensaje.getContenido());
+                ps.setBoolean(4, mensaje.isEsAnuncio());
+                
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("ID");
                     }
                 }
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error al enviar mensaje de grupo", ex);
+            LOGGER.log(Level.SEVERE, "Error al enviar mensaje a grupo", ex);
         }
         
         return -1;
@@ -101,48 +117,49 @@ public class Mensajes_Grupo_Controller extends Base_Datos {
     }
     
     // Método para obtener mensajes de un grupo con datos del remitente
-    public List<Object[]> getMensajesConRemitente(int grupoID, int limite) {
-        List<Object[]> resultado = new ArrayList<>();
+    public List<Object[]> getMensajesConRemitente(int grupoId, int limite) {
         Connection conn = super.getREF();
+        List<Object[]> resultado = new ArrayList<>();
         
         if (conn == null) {
-            LOGGER.log(Level.SEVERE, "Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
             return resultado;
         }
         
-        String sql = "SELECT m.*, u.Nombre, u.Apellido, u.FotoPerfil " +
-                     "FROM MensajesGrupo m " +
-                     "INNER JOIN Usuarios u ON m.RemitenteID = u.UsuarioID " +
-                     "WHERE m.GrupoID = ? " +
-                     "ORDER BY m.FechaEnvio DESC";
+        // Consulta SQL corregida - usando TOP en lugar de FETCH FIRST
+        String sql = "SELECT TOP " + limite + " m.*, u.* " +
+                    "FROM MensajesGrupo m " +
+                    "INNER JOIN Usuarios u ON m.RemitenteID = u.UsuarioID " +
+                    "WHERE m.GrupoID = ? " +
+                    "ORDER BY m.FechaEnvio ASC";
         
-        // Si hay límite, añadirlo a la consulta
-        if (limite > 0) {
-            sql += " FETCH FIRST ? ROWS ONLY";
-        }
-        
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, grupoID);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, grupoId);
             
-            if (limite > 0) {
-                pstmt.setInt(2, limite);
-            }
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                    // Crear objeto Mensaje_Grupo
                     Mensajes_Grupo mensaje = new Mensajes_Grupo();
                     mensaje.setMensajeID(rs.getInt("MensajeID"));
                     mensaje.setGrupoID(rs.getInt("GrupoID"));
                     mensaje.setRemitenteID(rs.getInt("RemitenteID"));
                     mensaje.setContenido(rs.getString("Contenido"));
-                    mensaje.setFechaEnvio(rs.getTimestamp("FechaEnvio").toLocalDateTime());
+                    
+                    // Manejar fechas con posibles nulos
+                    if (rs.getObject("FechaEnvio") != null) {
+                        mensaje.setFechaEnvio(rs.getTimestamp("FechaEnvio").toLocalDateTime());
+                    }
+                    
                     mensaje.setEsAnuncio(rs.getBoolean("EsAnuncio"));
                     
+                    // Crear objeto Usuario (remitente)
                     Usuarios remitente = new Usuarios();
+                    remitente.setUsuarioID(rs.getInt("UsuarioID"));
                     remitente.setNombre(rs.getString("Nombre"));
                     remitente.setApellido(rs.getString("Apellido"));
-                    remitente.setFoto_perfil(rs.getString("FotoPerfil"));
+                    remitente.setEmail(rs.getString("Email"));
                     
+                    // Agregar par [mensaje, remitente] al resultado
                     resultado.add(new Object[]{mensaje, remitente});
                 }
             }

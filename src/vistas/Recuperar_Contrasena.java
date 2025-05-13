@@ -3,7 +3,6 @@ package vistas;
 import cocochat.CocoChat;
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
 
 public class Recuperar_Contrasena extends JDialog {
     private JTextField txtEmail;
@@ -82,6 +81,13 @@ public class Recuperar_Contrasena extends JDialog {
                     "La contraseña ha sido actualizada correctamente.", 
                     "Contraseña actualizada", 
                     JOptionPane.INFORMATION_MESSAGE);
+                
+                // ======== MONITOR ========
+                StringBuilder monitor = new StringBuilder();
+                monitor.append(email);
+                monitor.append(": cambio su contraseña ");
+                System.out.println(monitor);
+                
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, 

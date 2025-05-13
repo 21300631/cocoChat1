@@ -120,10 +120,24 @@ public class Registro extends JDialog {
         int resultado = CocoChat.usuarioController.add(nuevoUsuario);
         
         if (resultado > 0) {
+            // Añadir el usuario al grupo Global (ID = 2)
+            boolean agregadoAGrupoGlobal = CocoChat.gruposController.agregarMiembroGrupo(2, resultado, false);
+            
+            if (!agregadoAGrupoGlobal) {
+                System.out.println("Advertencia: No se pudo añadir al usuario al grupo Global");
+            }
+            
+            // ======== MONITOR ========
+            StringBuilder usuMonitor = new StringBuilder();
+            usuMonitor.append(txtNombre.getText()); // Corregido para obtener el texto del campo
+            usuMonitor.append(": se registro ");
+            System.out.println(usuMonitor);
+            
             JOptionPane.showMessageDialog(this, 
-                "Usuario registrado exitosamente. Ya puedes iniciar sesión.", 
-                "Registro completado", 
+                "Usuario registrado correctamente. ¡Bienvenido a CocoChat!",
+                "Registro exitoso", 
                 JOptionPane.INFORMATION_MESSAGE);
+            
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, 

@@ -265,7 +265,7 @@ public class Usuario_Controller extends Base_Datos
     }
     
     // Método para buscar usuarios por nombre o apellido
-    public List<Usuarios> buscarUsuarios(String busqueda) {
+    public List<Usuarios> buscarUsuariosPorNombreOApellido(String busqueda) {
         List<Usuarios> resultados = new ArrayList<>();
         Connection conn = super.getREF();
         
@@ -398,6 +398,108 @@ public class Usuario_Controller extends Base_Datos
         }
         
         return usuariosEnLinea;
+    }
+    
+    /**
+     * Busca usuarios por nombre, apellido o email
+     * 
+     * @param query Texto de búsqueda
+     * @return Lista de usuarios que coinciden con el criterio de búsqueda
+     */
+    public List<Usuarios> buscarUsuarios(String query) {
+        Connection conn = super.getREF();
+        List<Usuarios> usuarios = new ArrayList<>();
+        
+        if (conn == null) {
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            return usuarios;
+        }
+        
+        // Preparar búsqueda con LIKE
+        String searchPattern = "%" + query + "%";
+        
+        String sql = "SELECT * FROM Usuarios " +
+                    "WHERE Nombre LIKE ? OR Apellido LIKE ? OR Email LIKE ? " +
+                    "ORDER BY Nombre, Apellido";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Usuarios usuario = new Usuarios();
+                    usuario.setUsuarioID(rs.getInt("UsuarioID"));
+                    usuario.setNombre(rs.getString("Nombre"));
+                    usuario.setApellido(rs.getString("Apellido"));
+                    usuario.setEmail(rs.getString("Email"));
+                    
+                    usuarios.add(usuario);
+                }
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error al buscar usuarios", ex);
+        }
+        
+        return usuarios;
+    }
+
+    /**
+     * Obtiene todos los usuarios del sistema
+     * 
+     * @return Lista de todos los usuarios
+     */
+    public List<Usuarios> getAllUsuarios() {
+        Connection conn = super.getREF();
+        List<Usuarios> usuarios = new ArrayList<>();
+        
+        if (conn == null) {
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            return usuarios;
+        }
+        
+        String sql = "SELECT * FROM Usuarios ORDER BY Nombre, Apellido";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Usuarios usuario = new Usuarios();
+                usuario.setUsuarioID(rs.getInt("UsuarioID"));
+                usuario.setNombre(rs.getString("Nombre"));
+                usuario.setApellido(rs.getString("Apellido"));
+                usuario.setEmail(rs.getString("Email"));
+                
+                usuarios.add(usuario);
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error al obtener todos los usuarios", ex);
+        }
+        
+        return usuarios;
+    }
+    
+    /**
+     * Actualiza el estado de un usuario (online/offline)
+     * @param usuarioId ID del usuario
+     * @param estado Estado: 1 (online) o 0 (offline)
+     * @return true si se actualiza correctamente
+     */
+    public boolean actualizarEstadoUsuario(int usuarioId, int estado) {
+        String sql = "UPDATE Usuarios SET EnLinea = ? WHERE UsuarioID = ?";
+        try (Connection conn = super.getREF();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, estado);
+            pstmt.setInt(2, usuarioId);
+            
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar estado del usuario: " + e.getMessage());
+            return false;
+        }
     }
     
     // Método auxiliar para mapear un ResultSet a un objeto Usuarios
