@@ -33,7 +33,7 @@ public class Contactos_Controller extends Base_Datos
         }
         
         // Verificar si ya existe el contacto
-        if (esContacto(contacto.getUsuarioID(), contacto.getContactoUsuarioID())) 
+        if (esContacto(contacto.getUsuarioId(), contacto.getContactoUsuarioId())) 
         {
             LOGGER.info("El contacto ya existe para este usuario");
             return false;
@@ -44,8 +44,8 @@ public class Contactos_Controller extends Base_Datos
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) 
         {
-            pstmt.setInt(1, contacto.getUsuarioID());
-            pstmt.setInt(2, contacto.getContactoUsuarioID());
+            pstmt.setInt(1, contacto.getUsuarioId());
+            pstmt.setInt(2, contacto.getContactoUsuarioId());
             pstmt.setBoolean(3, contacto.isEsBloqueado());
             
             int filasAfectadas = pstmt.executeUpdate();

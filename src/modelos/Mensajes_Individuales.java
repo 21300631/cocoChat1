@@ -1,84 +1,102 @@
 package modelos;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Mensajes_Individuales {
+    private int mensajeID;
+    private int remitenteID;
+    private int destinatarioID;
+    private String contenido;
+    private LocalDateTime fechaEnvio;
+    private LocalDateTime fechaLeido;
+    private boolean esArchivado;
+    private String adjunto;
 
-    public Mensajes_Individuales(int MensajeID, int RemitenteID, int DestinatarioID, String Contenido, LocalDate FechaEnvio, LocalDate FechaLeido, boolean EsArchivado) {
-        this.MensajeID = MensajeID;
-        this.RemitenteID = RemitenteID;
-        this.DestinatarioID = DestinatarioID;
-        this.Contenido = Contenido;
-        this.FechaEnvio = FechaEnvio;
-        this.FechaLeido = FechaLeido;
-        this.EsArchivado = EsArchivado;
-    }
-    public int MensajeID;
-    public int RemitenteID;
-    public int DestinatarioID;
-    public String Contenido;
-    public LocalDate FechaEnvio;
-    public LocalDate FechaLeido;
-    public boolean EsArchivado;
-
-    public void setMensajeID(int MensajeID) {
-        this.MensajeID = MensajeID;
-    }
-
-    public void setRemitenteID(int RemitenteID) {
-        this.RemitenteID = RemitenteID;
+    // Constructor por defecto
+    public Mensajes_Individuales() {
+        this.mensajeID = 0;
+        this.remitenteID = 0;
+        this.destinatarioID = 0;
+        this.contenido = "";
+        this.fechaEnvio = LocalDateTime.now();
+        this.fechaLeido = null;
+        this.esArchivado = false;
+        this.adjunto = null;
     }
 
-    public void setDestinatarioID(int DestinatarioID) {
-        this.DestinatarioID = DestinatarioID;
+    // Constructor con parámetros
+    public Mensajes_Individuales(int remitenteID, int destinatarioID, String contenido, boolean esArchivado) {
+        this.remitenteID = remitenteID;
+        this.destinatarioID = destinatarioID;
+        this.contenido = contenido;
+        this.fechaEnvio = LocalDateTime.now();
+        this.fechaLeido = null;
+        this.esArchivado = esArchivado;
+        this.adjunto = null;
     }
 
-    public void setContenido(String Contenido) {
-        this.Contenido = Contenido;
-    }
-
-    public void setFechaEnvio(LocalDate FechaEnvio) {
-        this.FechaEnvio = FechaEnvio;
-    }
-
-    public void setFechaLeido(LocalDate FechaLeido) {
-        this.FechaLeido = FechaLeido;
-    }
-
-    public void setEsArchivado(boolean EsArchivado) {
-        this.EsArchivado = EsArchivado;
-    }
-    
-    
-
+    // Getters y setters
     public int getMensajeID() {
-        return MensajeID;
+        return mensajeID;
+    }
+
+    public void setMensajeID(int mensajeID) {
+        this.mensajeID = mensajeID;
     }
 
     public int getRemitenteID() {
-        return RemitenteID;
+        return remitenteID;
+    }
+
+    public void setRemitenteID(int remitenteID) {
+        this.remitenteID = remitenteID;
     }
 
     public int getDestinatarioID() {
-        return DestinatarioID;
+        return destinatarioID;
+    }
+
+    public void setDestinatarioID(int destinatarioID) {
+        this.destinatarioID = destinatarioID;
     }
 
     public String getContenido() {
-        return Contenido;
+        return contenido;
     }
 
-    public LocalDate getFechaEnvio() {
-        return FechaEnvio;
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
     }
 
-    public LocalDate getFechaLeido() {
-        return FechaLeido;
+    public LocalDateTime getFechaEnvio() {
+        return fechaEnvio;
+    }
+
+    public void setFechaEnvio(LocalDateTime fechaEnvio) {
+        this.fechaEnvio = fechaEnvio;
+    }
+
+    public LocalDateTime getFechaLeido() {
+        return fechaLeido;
+    }
+
+    public void setFechaLeido(LocalDateTime fechaLeido) {
+        this.fechaLeido = fechaLeido;
     }
 
     public boolean isEsArchivado() {
-        return EsArchivado;
+        return esArchivado;
     }
-    
 
-    
+    public void setEsArchivado(boolean esArchivado) {
+        this.esArchivado = esArchivado;
+    }
+
+    public String getAdjunto() {
+        return adjunto;
+    }
+
+    public void setAdjunto(String adjunto) {
+        this.adjunto = adjunto;
+    }
 }

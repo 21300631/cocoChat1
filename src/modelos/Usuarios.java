@@ -12,6 +12,7 @@ public class Usuarios
     private String apellido;
     private String telefono;
     private String email;
+    private String password;
     private LocalDateTime fecha_registro;
     private LocalDateTime ultima_conexion;
     private String foto_perfil;
@@ -28,6 +29,7 @@ public class Usuarios
         this.apellido = "";
         this.telefono = "";
         this.email = "";
+        this.password = "";
         this.fecha_registro = null;
         this.ultima_conexion = null;
         this.foto_perfil = "";
@@ -39,7 +41,7 @@ public class Usuarios
     
     // Constructor con todos los parámetros
     public Usuarios(String nombre, String apellido, String telefono, String email, 
-                        LocalDateTime fecha_registro, LocalDateTime ultima_conexion, 
+                        String password, LocalDateTime fecha_registro, LocalDateTime ultima_conexion, 
                         String foto_perfil, String estado, boolean cuenta_verificada, 
                         LocalDate fecha_nacimiento, char genero)
     {
@@ -47,6 +49,7 @@ public class Usuarios
         this.apellido = apellido;
         this.telefono = telefono;
         this.email = email;
+        this.password = password;
         this.fecha_registro = fecha_registro;
         this.ultima_conexion = ultima_conexion;
         this.foto_perfil = foto_perfil;
@@ -79,6 +82,14 @@ public class Usuarios
     public String getEmail() 
     {
         return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public LocalDateTime getFecha_registro() 

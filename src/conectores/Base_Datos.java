@@ -18,7 +18,8 @@ public class Base_Datos
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             
             // Conexión con autenticación SQL Server usando usuario App
-            String url = "jdbc:sqlserver://192.168.1.14:1433;database=CocoChat;trustServerCertificate=true";
+            //String url = "jdbc:sqlserver://localhost;database=CocoChat;trustServerCertificate=true";
+            String url = "jdbc:sqlserver://192.168.1.14;database=CocoChat;trustServerCertificate=true";
             String user = "App";
             String password = "S3rV!d0&";
             

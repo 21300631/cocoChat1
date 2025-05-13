@@ -21,59 +21,48 @@ public class Usuario_Controller extends Base_Datos
     }
 
     // Método para agregar un nuevo usuario
-    public int add(Usuarios user)
-    {
+    public int add(Usuarios user) {
         Connection conn = super.getREF();
         
-        // Verificar si la conexión es nula
-        if (conn == null) 
-        {
-            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+        if (conn == null) {
             return -1;
         }
         
-        // Verificar si el email ya está registrado
-        if (existeEmail(user.getEmail())) {
-            LOGGER.log(Level.WARNING, "No se puede crear el usuario. El email ya está registrado: {0}", user.getEmail());
-            return -1;
-        }
-
-        // Preparar la consulta SQL para insertar un nuevo usuario
-        String sql = "INSERT INTO Usuarios(Nombre, Apellido, Telefono, Email, FechaRegistro, UltimaConexion, " +
-                     "FotoPerfil, Estado, CuentaVerificada, FechaNacimiento, Genero) VALUES (?, ?, ?, ?, GETDATE(), GETDATE(), ?, ?, ?, ?, ?)";
+        // Actualizar la consulta SQL para incluir Password
+        String sql = "INSERT INTO Usuarios(Nombre, Apellido, Telefono, Email, Password, FechaRegistro, UltimaConexion, " +
+                     "FotoPerfil, Estado, CuentaVerificada, FechaNacimiento, Genero) " +
+                     "VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, ?, ?, ?, ?)";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
-        {
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getNombre());
             ps.setString(2, user.getApellido());
             ps.setString(3, user.getTelefono());
             ps.setString(4, user.getEmail());
-            ps.setString(5, user.getFoto_perfil());
-            ps.setString(6, user.getEstado());
-            ps.setBoolean(7, user.isCuenta_verificada());
-            // Fecha de nacimiento puede ser null
+            ps.setString(5, user.getPassword()); // Añadir contraseña
+            ps.setString(6, user.getFoto_perfil());
+            ps.setString(7, user.getEstado());
+            ps.setBoolean(8, user.isCuenta_verificada());
+            
             if (user.getFecha_nacimiento() != null) {
-                ps.setDate(8, java.sql.Date.valueOf(user.getFecha_nacimiento()));
+                ps.setDate(9, java.sql.Date.valueOf(user.getFecha_nacimiento()));
             } else {
-                ps.setNull(8, java.sql.Types.DATE);
+                ps.setObject(9, null);
             }
-            ps.setString(9, String.valueOf(user.getGenero()));
             
+            ps.setString(10, String.valueOf(user.getGenero()));
+            
+            // Ejecutar la consulta
             int filasAfectadas = ps.executeUpdate();
-            
             if (filasAfectadas > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int nuevoId = generatedKeys.getInt(1);
-                        LOGGER.log(Level.INFO, "Usuario agregado correctamente con ID: {0}", nuevoId);
-                        return nuevoId;
+                // Obtener el ID generado
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1); // Retornar el ID del usuario
                     }
                 }
             }
-        }
-        catch (SQLException ex) 
-        {
-            LOGGER.log(Level.SEVERE, "Error al agregar usuario", ex);
+        } catch (SQLException ex) {
+            System.err.println("Error al agregar usuario: " + ex.getMessage());
         }
         
         return -1;
@@ -303,7 +292,116 @@ public class Usuario_Controller extends Base_Datos
         return resultados;
     }
     
+    // Método para autenticar un usuario
+    public Usuarios autenticarUsuario(String email, String password) {
+        Connection conn = super.getREF();
+        if (conn == null) {
+            return null;
+        }
+        
+        String sql = "SELECT * FROM Usuarios WHERE Email = ? AND Password = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, password); // En producción, usar hash en lugar de texto plano
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Usuarios usuario = new Usuarios();
+                    usuario.setUsuarioID(rs.getInt("UsuarioID"));
+                    usuario.setNombre(rs.getString("Nombre"));
+                    usuario.setApellido(rs.getString("Apellido"));
+                    usuario.setEmail(rs.getString("Email"));
+                    usuario.setPassword(rs.getString("Password"));
+                    // Asignar otras propiedades
+                    
+                    return usuario;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al autenticar usuario: " + e.getMessage());
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Actualiza la contraseña de un usuario identificado por su email
+     * 
+     * @param email Email del usuario
+     * @param nuevaContrasena Nueva contraseña
+     * @return true si se actualizó correctamente, false en caso contrario
+     */
+    public boolean actualizarContrasena(String email, String nuevaContrasena) {
+        Connection conn = super.getREF();
+        
+        if (conn == null) {
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            return false;
+        }
+        
+        String sql = "UPDATE Usuarios SET Password = ? WHERE Email = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nuevaContrasena);
+            ps.setString(2, email);
+            
+            int filasAfectadas = ps.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error al actualizar contraseña: {0}", ex.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Obtiene los usuarios que están actualmente en línea
+     * (usuarios que se han conectado en los últimos 5 minutos)
+     * 
+     * @return Lista de usuarios en línea
+     */
+    public List<Usuarios> getUsuariosEnLinea() {
+        Connection conn = super.getREF();
+        List<Usuarios> usuariosEnLinea = new ArrayList<>();
+        
+        if (conn == null) {
+            LOGGER.severe("Error: No se puede realizar la operación. Conexión a la base de datos no disponible.");
+            return usuariosEnLinea;
+        }
+        
+        // Consulta para obtener usuarios con conexión en los últimos 5 minutos
+        String sql = "SELECT * FROM Usuarios WHERE UltimaConexion >= DATEADD(minute, -5, GETDATE())";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Usuarios usuario = new Usuarios();
+                    usuario.setUsuarioID(rs.getInt("UsuarioID"));
+                    usuario.setNombre(rs.getString("Nombre"));
+                    usuario.setApellido(rs.getString("Apellido"));
+                    usuario.setEmail(rs.getString("Email"));
+                    usuario.setTelefono(rs.getString("Telefono"));
+                    usuario.setEstado(rs.getString("Estado"));
+                    usuario.setFoto_perfil(rs.getString("FotoPerfil"));
+                    usuario.setCuenta_verificada(rs.getBoolean("CuentaVerificada"));
+                    
+                    // También puedes cargar última conexión si es necesaria
+                    if (rs.getTimestamp("UltimaConexion") != null) {
+                        usuario.setUltima_conexion(rs.getTimestamp("UltimaConexion").toLocalDateTime());
+                    }
+                    
+                    usuariosEnLinea.add(usuario);
+                }
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error al obtener usuarios en línea: {0}", ex.getMessage());
+        }
+        
+        return usuariosEnLinea;
+    }
+    
     // Método auxiliar para mapear un ResultSet a un objeto Usuarios
+    // Sirve para evitar duplicación de código
     private Usuarios mapearUsuarioDesdeResultSet(ResultSet rs) throws SQLException {
         Usuarios usuario = new Usuarios();
         

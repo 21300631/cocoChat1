@@ -1,193 +1,113 @@
 package vistas;
 
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+import cocochat.CocoChat;
+import java.awt.*;
+import javax.swing.*;
+import modelos.Usuarios;
 
-/**
- * Si quieres integrar la parte de la base de datos lo que buscas son las funciones onClickLogin(), onClickRegister() y quiza onClickForgotPassword()
- * Cualquier duda o cosa q quieran cambiar sientanse libres o mandenme un DM :D
- * deje unos cuantos comentarios a lo largo del codigo, ojala se entienda lmao
- * @author babalito01
- */
-public class LogIn extends JFrame{
+public class LogIn extends JFrame {
+    private JTextField username;
+    private JPasswordField password;
+    private JButton loginButton;
+    private JButton registerButton;
+    private JButton forgotPasswordButton;
     
-    JLabel usernameLabel, passwordLabel;
-    JTextField username;
-    JPasswordField password;
-    JButton login, register, forgotPassword;
-    
-    public LogIn(){
-        super();
+    public LogIn() {
         init();
     }
     
-    private void init(){
+    private void init() {
+        // Configuración de la ventana
         setTitle("CocoChat - Login");
-        //ADVERTENCIA: la vdd no estoy 100% seguro de que operacion de cerrado debe utilizar esta ventana, 
-        // ya que ps en teoria nomas es un popup, entonces si da error calen a moverle a esta linea
-        setDefaultCloseOperation(EXIT_ON_CLOSE); 
+        setSize(350, 250);  // Aumentar el tamaño de la ventana
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
         
-        // aqui se inicializan los botones y establezco las funciones cuando se clickean
-        login = new JButton("Iniciar Sesion");
-        login.addActionListener(a -> {
-            onClickLogin();
-        });
-        register = new JButton("Registrarse");
-        register.addActionListener(a -> {
-            onClickRegister();
-        });
-        forgotPassword = new JButton("Olvide mi contraseña");
-        forgotPassword.addActionListener(a -> {
-            onClickForgotPassword();
-        });
+        // Panel principal
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // se inicializan los campos de texto y las etiquetas para que sepan lo que es cada una
-        usernameLabel = new JLabel("Nombre de usuario:");
+        // Panel de campos
+        JPanel fieldsPanel = new JPanel(new GridLayout(2, 2, 5, 15));
+        
+        JLabel usernameLabel = new JLabel("Email del usuario:");
         username = new JTextField();
-        passwordLabel = new JLabel("Contraseña:");
+        username.setPreferredSize(new Dimension(150, 30));  // Establecer tamaño preferido
+        
+        JLabel passwordLabel = new JLabel("Contraseña:");
         password = new JPasswordField();
+        password.setPreferredSize(new Dimension(150, 30));  // Establecer tamaño preferido
         
-        GroupLayout gl = new GroupLayout(getContentPane());
-        gl.setAutoCreateContainerGaps(true);
-        gl.setAutoCreateGaps(true);
-        gl.linkSize(SwingConstants.HORIZONTAL, login, register, forgotPassword);//esto sirve pa q los botones tengan la misma anchura ;)
+        fieldsPanel.add(usernameLabel);
+        fieldsPanel.add(username);
+        fieldsPanel.add(passwordLabel);
+        fieldsPanel.add(password);
         
-        gl.setHorizontalGroup(
-            gl.createParallelGroup()
-                .addComponent(usernameLabel)
-                .addComponent(username)
-                .addComponent(passwordLabel)
-                .addComponent(password)
-                .addGroup(
-                    gl.createSequentialGroup()//el chiste de hacer un grupo secuencial y luego otro paralelo es que los botones midan menos que los campos de texto y esten centrados
-                        .addGap(50)// <--  para eso se agregan estas gaps
-                        .addGroup(
-                            gl.createParallelGroup()
-                                .addComponent(login)
-                                .addComponent(register)
-                                .addComponent(forgotPassword)
-                        )
-                        .addGap(50)
-                )
-        );
-        gl.setVerticalGroup(
-            gl.createSequentialGroup()
-                .addComponent(usernameLabel)
-                .addComponent(username)
-                .addComponent(passwordLabel)
-                .addComponent(password)
-                .addGap(15)
-                .addComponent(login)
-                .addComponent(register)
-                .addComponent(forgotPassword)
-        );
+        // Panel de botones con más espacio entre botones
+        JPanel buttonsPanel = new JPanel(new GridLayout(3, 1, 0, 10));
         
-        setLayout(gl);
-        pack();
-
-        setResizable(false);// para que no puedan cambiar el tamaño de la ventana y se vaya alv
-        setLocationRelativeTo(null);// esto es para que la ventana aparezca en el centro de la pantalla
+        loginButton = new JButton("Iniciar Sesion");
+        registerButton = new JButton("Registrarse");
+        forgotPasswordButton = new JButton("Olvidé mi contraseña");
+        
+        // Establecer altura mínima para los botones
+        loginButton.setPreferredSize(new Dimension(loginButton.getPreferredSize().width, 30));
+        registerButton.setPreferredSize(new Dimension(registerButton.getPreferredSize().width, 30));
+        forgotPasswordButton.setPreferredSize(new Dimension(forgotPasswordButton.getPreferredSize().width, 30));
+        
+        // Añadir ActionListeners a los botones
+        loginButton.addActionListener(e -> onClickLogin());
+        registerButton.addActionListener(e -> onClickRegister());
+        forgotPasswordButton.addActionListener(e -> onClickForgotPassword());
+        
+        buttonsPanel.add(loginButton);
+        buttonsPanel.add(registerButton);
+        buttonsPanel.add(forgotPasswordButton);
+        
+        mainPanel.add(fieldsPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
+        
+        add(mainPanel);
     }
     
-    private void onClickLogin(){
-        String user = username.getText().trim();//extrae el nombre de usuario y contraseña de los campos de texto
-        String pass = new String(password.getPassword()).trim();
-
-        // el siguiente if detecta si hay campos vacios y crea un popup de error
-        if(user.isEmpty() || pass.isEmpty()) {
-            String mensajeError = "Error: Tiene que rellenar todos los campos para iniciar sesion";
-            JOptionPane.showMessageDialog(
-                this, 
-                mensajeError, 
-                "Error al iniciar sesion", 
-                JOptionPane.ERROR_MESSAGE
-            );
+    private void onClickLogin() {
+        String user = username.getText();
+        String pass = new String(password.getPassword());
+        
+        // Autenticar usuario
+        Usuarios usuario = CocoChat.usuarioController.autenticarUsuario(user, pass);
+        
+        if (usuario != null) {
+            // Actualizar última conexion
+            CocoChat.usuarioController.actualizarUltimaConexion(usuario.getUsuario_Id());
+            
+            // Guardar el usuario autenticado
+            CocoChat.usuarioActual = usuario;
+            
+            // Mostrar la ventana principal
+            Coco coco = new Coco();
+            coco.setVisible(true);
+            
+            // Cerrar esta ventana
+            this.dispose();
         } else {
-            //AQUI VA LA FUNCION PARA CUANDO ESTEN LOS CAMPOS LLENOS
+            JOptionPane.showMessageDialog(this, 
+                "Usuario o contraseña incorrectos", 
+                "Error de autenticación", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    private void onClickRegister(){
-        //AQUI VA LA FUNCION PARA ABRIR LA VENTANA DE REGISTRO
+    // Método para manejar el registro de nuevos usuarios
+    private void onClickRegister() {
+        // Crear y mostrar el formulario de registro
+        Registro registroForm = new Registro(this);
+        registroForm.setVisible(true);
     }
     
-private void onClickForgotPassword() {
-    JDialog recoveryDialog = new JDialog(this, "Recuperar Contraseña", true);
-    recoveryDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    recoveryDialog.setResizable(false);
-
-    // Componentes de la ventana
-    JLabel usernameLabel = new JLabel("Nombre de usuario:");
-    JTextField usernameField = new JTextField(15);
-    JButton submitButton = new JButton("Enviar");
-    JButton backButton = new JButton("Volver al Login");
-
-    // Acción para el botón de enviar
-    submitButton.addActionListener(e -> {
-        String username = usernameField.getText().trim();
-        if (username.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                recoveryDialog,
-                "Por favor ingresa tu nombre de usuario.",
-                "Campo vacío",
-                JOptionPane.ERROR_MESSAGE
-            );
-        } else {
-            // Lógica para recuperar contraseña (simulada)
-            JOptionPane.showMessageDialog(
-                recoveryDialog,
-                "Se ha enviado un enlace de recuperación al correo asociado a " + username,
-                "Instrucciones enviadas",
-                JOptionPane.INFORMATION_MESSAGE
-            );
-            recoveryDialog.dispose();
-        }
-    });
-
-    // Acción para el botón de volver
-    backButton.addActionListener(e -> recoveryDialog.dispose());
-
-    // Configuración del layout
-    GroupLayout gl = new GroupLayout(recoveryDialog.getContentPane());
-    gl.setAutoCreateContainerGaps(true);
-    gl.setAutoCreateGaps(true);
-    gl.linkSize(SwingConstants.HORIZONTAL, submitButton, backButton);
-
-    gl.setHorizontalGroup(
-        gl.createParallelGroup(GroupLayout.Alignment.CENTER)
-            .addGroup(gl.createSequentialGroup()
-                .addGroup(gl.createParallelGroup()
-                    .addComponent(usernameLabel)
-                    .addComponent(usernameField)
-                    .addGroup(gl.createSequentialGroup()
-                        .addComponent(submitButton)
-                        .addComponent(backButton)
-                )
-            )
-                    )
-    );
-
-    gl.setVerticalGroup(
-        gl.createSequentialGroup()
-            .addComponent(usernameLabel)
-            .addComponent(usernameField)
-            .addGap(20)
-            .addGroup(gl.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(submitButton)
-                .addComponent(backButton))
-    );
-
-    recoveryDialog.getContentPane().setLayout(gl);
-    recoveryDialog.pack();
-    recoveryDialog.setLocationRelativeTo(this);
-    recoveryDialog.setVisible(true);
-} 
+    // Método para manejar la recuperación de contraseña
+    private void onClickForgotPassword() {
+        Recuperar_Contrasena recuperarForm = new Recuperar_Contrasena(this);
+        recuperarForm.setVisible(true);
+    }
 }

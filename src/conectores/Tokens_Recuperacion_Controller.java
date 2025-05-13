@@ -33,7 +33,7 @@ public class Tokens_Recuperacion_Controller extends Base_Datos
         }
 
         // Preparar la consulta SQL para insertar un nuevo usuario
-        String sql = "Insert into TokensRec(Token, FechaCreacion, FechaExpiracion, Usado, IPsolicitud " +
+        String sql = "Insert into TokensRecuperacion(Token, FechaCreacion, FechaExpiracion, Usado, IPsolicitud " +
                      " values(?, ?, ?, ?, ?)";
         
         try (PreparedStatement ps = conn.prepareStatement(sql))
